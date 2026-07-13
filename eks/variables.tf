@@ -13,7 +13,7 @@ variable "env" {
 variable "project_name" {
   description = "Project name"
   type        = string
-  default     = "AWS EKS Testing"
+  default     = "AWS-EKS-Testing"
 }
 
 
