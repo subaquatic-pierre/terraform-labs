@@ -1,0 +1,22 @@
+# Exclude terraform directory
+**/*.terraform
+
+# Exclude Terraform state files
+**/*.terraform.tfstate*
+**/*.terraform.tfstate.backup*
+
+# Exclude lock files
+**/*.terraform.lock.hcl
+
+# Exclude compiled plan files
+**/*plan.out
+**/*plan.log
+
+# Exclude generated configuration files (like Terraform Cloud credentials)
+**/*config.json
+**/*config.json.backups
+
+**/*.tfvars
+
+**/*.tfstate**
+**/keys/**
