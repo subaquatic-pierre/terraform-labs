@@ -1,3 +1,3 @@
 output "cluster_name" {
-  value = module.eks.cluster_name
+  value = aws_eks_cluster.eks.cluster_name
 }
