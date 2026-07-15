@@ -94,7 +94,6 @@ resource "aws_iam_policy" "eks_access" {
   })
 }
 
-
 resource "aws_iam_group_policy_attachment" "admins" {
   group      = aws_iam_group.eks_admins.name
   policy_arn = aws_iam_policy.eks_access.arn
@@ -132,8 +131,6 @@ resource "aws_eks_access_policy_association" "pierre_admin" {
     type = "cluster"
   }
 }
-
-
 
 ###############################################################################
 # DEVELOPER ACCESS

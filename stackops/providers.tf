@@ -1,14 +1,3 @@
-terraform {
-  required_version = ">= 1.6"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.54.0"
-    }
-  }
-}
-
 provider "aws" {
   region = "us-east-2"
 
@@ -21,3 +10,8 @@ provider "kubernetes" {
   config_path = "~/.kube/config"
 }
 
+provider "helm" {
+  kubernetes = {
+    config_path = "~/.kube/config"
+  }
+}

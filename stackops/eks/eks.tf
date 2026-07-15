@@ -41,3 +41,15 @@ resource "aws_eks_cluster" "eks" {
 
   depends_on = [aws_iam_role_policy_attachment.eks]
 }
+
+resource "aws_eks_addon" "example" {
+  cluster_name = aws_eks_cluster.eks.name
+  addon_name   = "aws-network-flow-monitoring-agent"
+}
+
+resource "aws_eks_addon" "pod_identity" {
+  cluster_name = aws_eks_cluster.eks.name
+  addon_name   = "eks-pod-identity-agent"
+}
+
+

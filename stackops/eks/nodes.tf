@@ -57,6 +57,10 @@ resource "aws_eks_node_group" "general" {
     role = "general"
   }
 
+  tags = {
+    Name = "${var.project_name}-eks-node"
+  }
+
   # launch_template {
   #   id      = aws_launch_template.this.id
   #   version = "$Latest"

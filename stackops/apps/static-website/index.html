@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StackOps — The Modern Cloud Development Platform</title>
+  <meta name="description" content="Infrastructure as Code, GitOps, SRE, and Cloud Computing — unified in one platform. StackOps brings modern cloud operations to every engineering team." />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" sizes="any" />
+  <link rel="apple-touch-icon" href="favicon.svg" />
+  <meta name="theme-color" content="#09090b" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="StackOps — The Modern Cloud Development Platform" />
+  <meta property="og:description" content="Infrastructure as Code, GitOps, SRE, and Cloud Computing — unified in one platform." />
+  <meta property="og:image" content="https://infra.stackops.link/og-image.png" />
+  <meta property="og:url" content="https://infra.stackops.link" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="StackOps — The Modern Cloud Development Platform" />
+  <meta name="twitter:description" content="Infrastructure as Code, GitOps, SRE, and Cloud Computing — unified in one platform." />
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            surface: {
+              0: '#09090b',
+              1: '#0f1117',
+              2: '#16181d',
+              3: '#1c1f26',
+              4: '#22252d',
+            },
+            accent: {
+              DEFAULT: '#22c55e',
+              light: '#4ade80',
+              dim: '#16a34a',
+            },
+            brand: {
+              DEFAULT: '#3b82f6',
+              light: '#60a5fa',
+              dim: '#2563eb',
+            },
+          },
+          keyframes: {
+            'fade-up': {
+              '0%': { opacity: '0', transform: 'translateY(24px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            'glow-pulse': {
+              '0%, 100%': { opacity: '0.4' },
+              '50%': { opacity: '0.8' },
+            },
+          },
+          animation: {
+            'fade-up': 'fade-up 0.6s ease-out forwards',
+            'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    /* ── Base ── */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { background: #09090b; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ── Subtle grid ── */
+    .bg-grid {
+      background-image:
+        linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+      background-size: 64px 64px;
+    }
+
+    /* ── Gradient text ── */
+    .text-gradient {
+      background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 50%, #e2e8f0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .text-gradient-accent {
+      background: linear-gradient(135deg, #22c55e 0%, #4ade80 50%, #86efac 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .text-gradient-blue {
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Hero glow orb ── */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+    }
+
+    /* ── Reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Card ── */
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    }
+    .card:hover {
+      border-color: rgba(59,130,246,0.2);
+      box-shadow: 0 8px 40px rgba(59,130,246,0.06);
+      transform: translateY(-2px);
+    }
+
+    /* ── Terminal ── */
+    .terminal {
+      background: #0c0e12;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+    }
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* ── Cursor blink ── */
+    .cursor {
+      display: inline-block;
+      width: 7px;
+      height: 16px;
+      background: #22c55e;
+      vertical-align: text-bottom;
+      margin-left: 1px;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ── Syntax colors ── */
+    .c-prompt { color: #22c55e; }
+    .c-cmd { color: #e2e8f0; }
+    .c-flag { color: #60a5fa; }
+    .c-str { color: #fbbf24; }
+    .c-comment { color: #4b5563; }
+    .c-success { color: #4ade80; }
+    .c-label { color: #94a3b8; }
+    .c-accent { color: #22c55e; }
+
+    /* ── Concept pill ── */
+    .concept-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      color: #94a3b8;
+      transition: all 0.25s ease;
+    }
+    .concept-pill:hover {
+      border-color: rgba(59,130,246,0.2);
+      background: rgba(59,130,246,0.04);
+      color: #e2e8f0;
+    }
+
+    /* ── Section divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+    }
+
+    /* ── CTA button ── */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      background: #22c55e;
+      color: #09090b;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 0 0 rgba(34,197,94,0);
+    }
+    .btn-primary:hover {
+      background: #4ade80;
+      box-shadow: 0 0 30px rgba(34,197,94,0.15);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #e2e8f0;
+      transition: all 0.2s ease;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.12);
+      transform: translateY(-1px);
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
+
+    /* ── Stat counter ── */
+    .stat-value {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    /* ── Nav ── */
+    .nav-blur {
+      backdrop-filter: blur(12px) saturate(150%);
+      -webkit-backdrop-filter: blur(12px) saturate(150%);
+    }
+
+    /* ── Floating code lines ── */
+    .float-line {
+      position: absolute;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,0.04);
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* ── Feature icon ── */
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+
+<body class="bg-surface-0 text-white antialiased bg-grid">
+
+  <!-- ═══════════════════════════════════════════ NAV ═══════════════════════════════════════════ -->
+  <nav id="nav" class="fixed top-0 inset-x-0 z-50 nav-blur bg-surface-0/70 border-b border-white/[0.04] transition-all duration-300">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-2.5 group cursor-pointer">
+        <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center transition-transform group-hover:scale-105">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+            <line x1="4" y1="22" x2="4" y2="15"/>
+          </svg>
+        </div>
+        <span class="text-[17px] font-bold tracking-tight text-white">StackOps</span>
+      </a>
+
+      <!-- Desktop nav -->
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#pillars" class="text-[13px] font-medium text-slate-400 hover:text-white transition-colors cursor-pointer">Platform</a>
+        <a href="#workflow" class="text-[13px] font-medium text-slate-400 hover:text-white transition-colors cursor-pointer">How It Works</a>
+        <a href="#concepts" class="text-[13px] font-medium text-slate-400 hover:text-white transition-colors cursor-pointer">Ecosystem</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="#waitlist" class="hidden sm:inline-flex btn-primary !py-2.5 !px-5 !text-[13px] !rounded-lg cursor-pointer">
+          Join Waitlist
+        </a>
+        <button id="mobile-toggle" class="md:hidden p-2 text-slate-400 hover:text-white transition-colors cursor-pointer" aria-label="Toggle navigation">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile nav -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-white/[0.04] bg-surface-0/95 nav-blur">
+      <div class="px-6 py-4 space-y-1">
+        <a href="#pillars" class="block py-2.5 text-sm text-slate-400 hover:text-white transition-colors cursor-pointer">Platform</a>
+        <a href="#workflow" class="block py-2.5 text-sm text-slate-400 hover:text-white transition-colors cursor-pointer">How It Works</a>
+        <a href="#concepts" class="block py-2.5 text-sm text-slate-400 hover:text-white transition-colors cursor-pointer">Ecosystem</a>
+        <a href="#waitlist" class="block py-2.5 text-sm text-accent font-medium cursor-pointer">Join Waitlist</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════ HERO ═══════════════════════════════════════════ -->
+  <section class="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+    <!-- Glow orbs -->
+    <div class="orb w-[500px] h-[500px] bg-accent/[0.07] -top-60 left-1/4"></div>
+    <div class="orb w-[400px] h-[400px] bg-brand/[0.05] top-1/3 -right-20"></div>
+
+    <!-- Floating code lines (decorative) -->
+    <div class="float-line" style="top:18%; left:5%; transform:rotate(-2deg)">terraform apply -auto-approve</div>
+    <div class="float-line" style="top:30%; right:8%; transform:rotate(1.5deg)">kubectl get pods -n production</div>
+    <div class="float-line" style="top:65%; left:12%; transform:rotate(-1deg)">ansible-playbook deploy.yml</div>
+    <div class="float-line" style="top:75%; right:15%; transform:rotate(2deg)">git push origin main</div>
+    <div class="float-line" style="top:45%; left:80%; transform:rotate(-0.5deg)">packer build image.pkr.hcl</div>
+
+    <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
+      <!-- Badge -->
+      <div class="reveal inline-flex items-center gap-2 mb-8 px-4 py-1.5 rounded-full border border-white/[0.06] bg-white/[0.02] text-[12px] font-medium text-slate-400 tracking-wide">
+        <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+        COMING SOON
+      </div>
+
+      <!-- Headline -->
+      <h1 class="reveal text-[clamp(2.5rem,6vw,4.5rem)] font-extrabold leading-[1.06] tracking-[-0.03em] mb-6" style="transition-delay:0.08s;">
+        <span class="text-gradient">Ship infrastructure</span><br />
+        <span class="text-gradient-accent">with confidence.</span>
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="reveal text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed font-light" style="transition-delay:0.16s;">
+        StackOps unifies Infrastructure as Code, GitOps, and SRE practices into a single,
+        cohesive platform. From provisioning to production — manage your entire cloud lifecycle.
+      </p>
+
+      <!-- CTAs -->
+      <div class="reveal flex flex-col sm:flex-row items-center justify-center gap-4 mb-16" style="transition-delay:0.24s;">
+        <a href="#waitlist" class="btn-primary cursor-pointer">
+          Get Early Access
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a href="#workflow" class="btn-secondary cursor-pointer">
+          See How It Works
+        </a>
+      </div>
+
+      <!-- Terminal demo -->
+      <div class="reveal terminal max-w-3xl mx-auto text-left" style="transition-delay:0.32s;">
+        <div class="terminal-bar">
+          <div class="terminal-dot" style="background:#ef4444"></div>
+          <div class="terminal-dot" style="background:#eab308"></div>
+          <div class="terminal-dot" style="background:#22c55e"></div>
+          <span class="ml-3 text-[11px] text-slate-500 font-mono">stackops</span>
+        </div>
+        <div class="p-5 sm:p-6 font-mono text-[12.5px] leading-[1.9] min-h-[220px]" id="terminal-root"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ CONCEPTS STRIP ═══════════════════════════════════════════ -->
+  <section id="concepts" class="relative py-20 border-y border-white/[0.04]">
+    <div class="max-w-5xl mx-auto px-6">
+      <p class="reveal text-center text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium mb-10">The modern cloud development stack</p>
+      <div class="reveal flex flex-wrap justify-center gap-3" style="transition-delay:0.1s;">
+        <span class="concept-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          Infrastructure as Code
+        </span>
+        <span class="concept-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          GitOps
+        </span>
+        <span class="concept-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          SRE Practices
+        </span>
+        <span class="concept-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          Cloud Computing
+        </span>
+        <span class="concept-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          DevOps
+        </span>
+        <span class="concept-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Container Orchestration
+        </span>
+        <span class="concept-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Observability
+        </span>
+        <span class="concept-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Secrets Management
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ PILLARS ═══════════════════════════════════════════ -->
+  <section id="pillars" class="relative py-24 sm:py-32">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <p class="reveal text-[11px] uppercase tracking-[0.2em] text-accent font-medium mb-4">Platform</p>
+        <h2 class="reveal text-3xl sm:text-4xl font-bold tracking-tight mb-4" style="transition-delay:0.08s;">
+          Everything your team needs.<br />
+          <span class="text-gradient-accent">Nothing it doesn't.</span>
+        </h2>
+        <p class="reveal text-slate-400 max-w-xl mx-auto text-lg leading-relaxed" style="transition-delay:0.16s;">
+          A focused platform that covers the full cloud lifecycle — from the first line of code to a monitored production system.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-5">
+        <!-- Pillar 1 -->
+        <div class="reveal card p-7 sm:p-8">
+          <div class="feature-icon bg-blue-500/10 mb-5">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Infrastructure as Code</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">
+            Define your entire infrastructure declaratively. Provision VMs, networks, storage, and Kubernetes clusters across any cloud or on-prem environment using battle-tested IaC tools.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">Terraform</span>
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">OpenTofu</span>
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">Pulumi</span>
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">Packer</span>
+          </div>
+        </div>
+
+        <!-- Pillar 2 -->
+        <div class="reveal card p-7 sm:p-8" style="transition-delay:0.08s;">
+          <div class="feature-icon bg-emerald-500/10 mb-5">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">GitOps & Delivery</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">
+            Your Git repository becomes the single source of truth. Automated pipelines validate, test, and deploy every change with full audit trails and instant rollbacks.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">ArgoCD</span>
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">Flux</span>
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">GitHub Actions</span>
+          </div>
+        </div>
+
+        <!-- Pillar 3 -->
+        <div class="reveal card p-7 sm:p-8" style="transition-delay:0.16s;">
+          <div class="feature-icon bg-amber-500/10 mb-5">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Configuration Management</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">
+            Automate server configuration, package management, and service setup. Ensure consistency across hundreds of nodes with idempotent, version-controlled playbooks.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">Ansible</span>
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">Helm</span>
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">Kustomize</span>
+          </div>
+        </div>
+
+        <!-- Pillar 4 -->
+        <div class="reveal card p-7 sm:p-8" style="transition-delay:0.24s;">
+          <div class="feature-icon bg-violet-500/10 mb-5">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Observability & SRE</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">
+            Monitor everything from infrastructure metrics to application traces. Set SLOs, define error budgets, and get intelligent alerting before your users notice.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">Prometheus</span>
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">Grafana</span>
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">OpenTelemetry</span>
+          </div>
+        </div>
+
+        <!-- Pillar 5 -->
+        <div class="reveal card p-7 sm:p-8" style="transition-delay:0.12s;">
+          <div class="feature-icon bg-cyan-500/10 mb-5">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Multi-Cloud & Hybrid</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">
+            Deploy across AWS, Azure, GCP, Proxmox, or bare metal. Abstract away provider differences and move workloads where they make sense — not where vendor lock-in dictates.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">AWS</span>
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">Azure</span>
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">GCP</span>
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">Proxmox</span>
+          </div>
+        </div>
+
+        <!-- Pillar 6 -->
+        <div class="reveal card p-7 sm:p-8" style="transition-delay:0.2s;">
+          <div class="feature-icon bg-rose-500/10 mb-5">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Security & Compliance</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">
+            Secrets rotation, policy-as-code, RBAC, network policies, and audit logging built into every layer. Meet SOC2, HIPAA, and PCI-DSS requirements without the toil.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">Vault</span>
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">OPA</span>
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-surface-3 text-slate-400">Cilium</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider max-w-4xl mx-auto"></div>
+
+  <!-- ═══════════════════════════════════════════ HOW IT WORKS ═══════════════════════════════════════════ -->
+  <section id="workflow" class="relative py-24 sm:py-32">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <p class="reveal text-[11px] uppercase tracking-[0.2em] text-accent font-medium mb-4">Workflow</p>
+        <h2 class="reveal text-3xl sm:text-4xl font-bold tracking-tight mb-4" style="transition-delay:0.08s;">
+          From commit to production.<br />
+          <span class="text-gradient-blue">Automatically.</span>
+        </h2>
+        <p class="reveal text-slate-400 max-w-xl mx-auto text-lg" style="transition-delay:0.16s;">
+          Push code, merge a PR, or trigger a pipeline — StackOps handles the rest.
+          No manual kubectl. No SSH juggling. No 3am incidents from drift.
+        </p>
+      </div>
+
+      <!-- Workflow steps -->
+      <div class="relative">
+        <!-- Connector line (desktop) -->
+        <div class="hidden lg:block absolute top-[52px] left-[calc(16.67%+24px)] right-[calc(16.67%+24px)] h-px bg-gradient-to-r from-blue-500/20 via-emerald-500/20 to-violet-500/20"></div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4">
+          <!-- Step 1 -->
+          <div class="reveal text-center">
+            <div class="relative inline-flex mb-5">
+              <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              </div>
+            </div>
+            <p class="text-[10px] uppercase tracking-[0.15em] text-blue-400 font-semibold mb-2">01 — Define</p>
+            <h4 class="font-semibold mb-1.5">Write Code</h4>
+            <p class="text-slate-500 text-sm leading-relaxed">Define infrastructure, services, and policies as code in your preferred language.</p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="reveal text-center" style="transition-delay:0.1s;">
+            <div class="relative inline-flex mb-5">
+              <div class="w-12 h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+              </div>
+            </div>
+            <p class="text-[10px] uppercase tracking-[0.15em] text-accent font-semibold mb-2">02 — Validate</p>
+            <h4 class="font-semibold mb-1.5">Automated Checks</h4>
+            <p class="text-slate-500 text-sm leading-relaxed">Policy-as-code scans, cost estimation, security analysis, and plan previews run on every change.</p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="reveal text-center" style="transition-delay:0.2s;">
+            <div class="relative inline-flex mb-5">
+              <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </div>
+            </div>
+            <p class="text-[10px] uppercase tracking-[0.15em] text-amber-400 font-semibold mb-2">03 — Deploy</p>
+            <h4 class="font-semibold mb-1.5">Provision & Apply</h4>
+            <p class="text-slate-500 text-sm leading-relaxed">Infrastructure is provisioned, containers are orchestrated, and services are rolled out with zero-downtime.</p>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="reveal text-center" style="transition-delay:0.3s;">
+            <div class="relative inline-flex mb-5">
+              <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+            </div>
+            <p class="text-[10px] uppercase tracking-[0.15em] text-violet-400 font-semibold mb-2">04 — Observe</p>
+            <h4 class="font-semibold mb-1.5">Monitor & Respond</h4>
+            <p class="text-slate-500 text-sm leading-relaxed">Real-time metrics, traces, and logs with intelligent alerting and automated incident response.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider max-w-4xl mx-auto"></div>
+
+  <!-- ═══════════════════════════════════════════ STATS ═══════════════════════════════════════════ -->
+  <section class="relative py-24 sm:py-32">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="reveal grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 text-center">
+        <div>
+          <div class="stat-value text-gradient-accent mb-2">100%</div>
+          <p class="text-sm text-slate-500">Declarative</p>
+        </div>
+        <div>
+          <div class="stat-value text-gradient-blue mb-2">0</div>
+          <p class="text-sm text-slate-500">Manual Steps</p>
+        </div>
+        <div>
+          <div class="stat-value text-gradient mb-2">&lt;1m</div>
+          <p class="text-sm text-slate-500">Deploy Time</p>
+        </div>
+        <div>
+          <div class="stat-value text-gradient-accent mb-2">∞</div>
+          <p class="text-sm text-slate-500">Reproducibility</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider max-w-4xl mx-auto"></div>
+
+  <!-- ═══════════════════════════════════════════ CODE EXAMPLE ═══════════════════════════════════════════ -->
+  <section class="relative py-24 sm:py-32">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <!-- Left: copy -->
+        <div>
+          <p class="reveal text-[11px] uppercase tracking-[0.2em] text-accent font-medium mb-4">Developer Experience</p>
+          <h2 class="reveal text-3xl sm:text-4xl font-bold tracking-tight mb-5" style="transition-delay:0.08s;">
+            Write it once.<br />
+            <span class="text-gradient-accent">Deploy it everywhere.</span>
+          </h2>
+          <p class="reveal text-slate-400 text-lg leading-relaxed mb-8" style="transition-delay:0.16s;">
+            StackOps wraps the tools you already know — Terraform, Ansible, Kubernetes — with a unified CLI and workflow engine. No new syntax to learn. No black boxes.
+          </p>
+          <div class="reveal space-y-4" style="transition-delay:0.24s;">
+            <div class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <p class="text-sm text-slate-400">Single config file maps to multi-cloud provisioning</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <p class="text-sm text-slate-400">Environment-aware — dev, staging, and prod from one source</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <p class="text-sm text-slate-400">Built-in drift detection and automatic remediation</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: terminal -->
+        <div class="reveal" style="transition-delay:0.2s;">
+          <div class="terminal">
+            <div class="terminal-bar">
+              <div class="terminal-dot" style="background:#ef4444"></div>
+              <div class="terminal-dot" style="background:#eab308"></div>
+              <div class="terminal-dot" style="background:#22c55e"></div>
+              <span class="ml-3 text-[11px] text-slate-500 font-mono">stackops.yml</span>
+            </div>
+            <div class="p-5 sm:p-6 font-mono text-[12px] leading-[2] overflow-x-auto">
+              <span class="c-comment"># stackops.yml — Full stack, one file</span><br />
+              <span class="c-label">project:</span><br />
+              &nbsp;&nbsp;<span class="c-label">name:</span> <span class="c-str">"my-platform"</span><br />
+              &nbsp;&nbsp;<span class="c-label">clouds:</span> [<span class="c-str">aws</span>, <span class="c-str">proxmox</span>]<br />
+              <br />
+              <span class="c-label">infrastructure:</span><br />
+              &nbsp;&nbsp;<span class="c-label">kubernetes:</span><br />
+              &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-label">version:</span> <span class="c-str">"1.31"</span><br />
+              &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-label">nodes:</span> <span class="c-str">3</span><br />
+              &nbsp;&nbsp;<span class="c-label">networking:</span><br />
+              &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-label">cni:</span> <span class="c-str">"cilium"</span><br />
+              &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-label">mesh:</span> <span class="c-str">"istio"</span><br />
+              <br />
+              <span class="c-label">gitops:</span><br />
+              &nbsp;&nbsp;<span class="c-label">engine:</span> <span class="c-str">"argocd"</span><br />
+              &nbsp;&nbsp;<span class="c-label">repo:</span> <span class="c-str">"github.com/org/gitops"</span><br />
+              <br />
+              <span class="c-label">observability:</span><br />
+              &nbsp;&nbsp;<span class="c-label">stack:</span> [<span class="c-str">prometheus</span>, <span class="c-str">grafana</span>, <span class="c-str">loki</span>]<br />
+              &nbsp;&nbsp;<span class="c-label">slo_budget:</span> <span class="c-str">99.9%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider max-w-4xl mx-auto"></div>
+
+  <!-- ═══════════════════════════════════════════ WAITLIST / CTA ═══════════════════════════════════════════ -->
+  <section id="waitlist" class="relative py-24 sm:py-32">
+    <div class="max-w-3xl mx-auto px-6 text-center">
+      <!-- Glow -->
+      <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div class="w-80 h-80 bg-accent rounded-full" style="filter:blur(160px);opacity:0.06"></div>
+      </div>
+
+      <div class="relative">
+        <div class="reveal inline-flex items-center gap-2 mb-8 px-4 py-1.5 rounded-full border border-white/[0.06] bg-white/[0.02] text-[12px] font-medium text-slate-400">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+          EARLY ACCESS
+        </div>
+
+        <h2 class="reveal text-3xl sm:text-5xl font-bold tracking-tight mb-6" style="transition-delay:0.08s;">
+          Be first in line.
+        </h2>
+        <p class="reveal text-slate-400 max-w-lg mx-auto text-lg mb-10 leading-relaxed" style="transition-delay:0.16s;">
+          StackOps is launching soon. Join the waitlist to get early access, shape the product roadmap, and be part of the next generation of cloud operations.
+        </p>
+
+        <!-- Email form -->
+        <form id="waitlist-form" class="reveal flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto" style="transition-delay:0.24s;" onsubmit="return false;">
+          <input
+            type="email"
+            required
+            placeholder="you@company.com"
+            class="w-full sm:flex-1 px-5 py-3.5 rounded-xl bg-surface-2 border border-white/[0.06] text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-accent/40 focus:ring-1 focus:ring-accent/20 transition-all"
+            aria-label="Email address"
+          />
+          <button type="submit" class="btn-primary w-full sm:w-auto !py-3.5 cursor-pointer whitespace-nowrap" id="waitlist-btn">
+            Join Waitlist
+          </button>
+        </form>
+
+        <p class="reveal text-[12px] text-slate-600 mt-4" style="transition-delay:0.32s;">No spam. Unsubscribe anytime.</p>
+
+        <!-- Success message (hidden by default) -->
+        <div id="waitlist-success" class="hidden mt-6 inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-accent/10 border border-accent/20 text-accent text-sm font-medium">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          You're on the list! We'll be in touch.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ FOOTER ═══════════════════════════════════════════ -->
+  <footer class="border-t border-white/[0.04] py-12">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+        <!-- Logo -->
+        <a href="#" class="flex items-center gap-2.5 cursor-pointer">
+          <div class="w-7 h-7 rounded-md bg-accent flex items-center justify-center">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+              <line x1="4" y1="22" x2="4" y2="15"/>
+            </svg>
+          </div>
+          <span class="text-sm font-bold text-white">StackOps</span>
+        </a>
+
+        <!-- Links -->
+        <div class="flex items-center gap-6">
+          <a href="https://github.com/stackopshq" target="_blank" rel="noopener" class="text-[13px] text-slate-500 hover:text-white transition-colors cursor-pointer">GitHub</a>
+          <a href="#" class="text-[13px] text-slate-500 hover:text-white transition-colors cursor-pointer">Docs</a>
+          <a href="#" class="text-[13px] text-slate-500 hover:text-white transition-colors cursor-pointer">Blog</a>
+        </div>
+
+        <!-- Copyright -->
+        <p class="text-[12px] text-slate-600">&copy; 2026 StackOps</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════ JS ═══════════════════════════════════════════ -->
+  <script>
+    // ── Reveal on scroll ──
+    const revealEls = document.querySelectorAll('.reveal');
+    const revealObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          revealObs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+    revealEls.forEach(el => revealObs.observe(el));
+
+    // ── Mobile menu ──
+    const mToggle = document.getElementById('mobile-toggle');
+    const mMenu = document.getElementById('mobile-menu');
+    let mOpen = false;
+    mToggle.addEventListener('click', () => {
+      mOpen = !mOpen;
+      mMenu.classList.toggle('hidden', !mOpen);
+    });
+    mMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => { mOpen = false; mMenu.classList.add('hidden'); }));
+
+    // ── Smooth scroll ──
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const t = document.querySelector(a.getAttribute('href'));
+        if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // ── Terminal typing ──
+    const termLines = [
+      { t: '<span class="c-prompt">~</span> <span class="c-cmd">stackops</span> <span class="c-flag">init</span> <span class="c-str">production</span>', d: 0 },
+      { t: '<span class="c-comment">  Reading stackops.yml...</span>', d: 500 },
+      { t: '<span class="c-comment">  Resolving providers: aws, proxmox, kubernetes</span>', d: 800 },
+      { t: '<span class="c-comment">  Environment: production | Region: eu-central-1</span>', d: 1100 },
+      { t: '', d: 1300 },
+      { t: '<span class="c-prompt">~</span> <span class="c-cmd">stackops</span> <span class="c-flag">plan</span>', d: 1700 },
+      { t: '<span class="c-accent">  +</span> <span class="c-label">aws_vpc.main</span>             <span class="c-comment">create</span>', d: 2500 },
+      { t: '<span class="c-accent">  +</span> <span class="c-label">aws_eks.cluster</span>           <span class="c-comment">create</span>', d: 2700 },
+      { t: '<span class="c-accent">  +</span> <span class="c-label">kubernetes_namespace.apps</span>  <span class="c-comment">create</span>', d: 2900 },
+      { t: '<span class="c-accent">  +</span> <span class="c-label">argocd.applications</span>       <span class="c-comment">create</span>', d: 3100 },
+      { t: '<span class="c-accent">  +</span> <span class="c-label">prometheus.stack</span>          <span class="c-comment">create</span>', d: 3300 },
+      { t: '', d: 3500 },
+      { t: '<span class="c-comment">  Plan: 5 to add, 0 to change, 0 to destroy.</span>', d: 3700 },
+      { t: '', d: 3900 },
+      { t: '<span class="c-prompt">~</span> <span class="c-cmd">stackops</span> <span class="c-flag">apply</span> <span class="c-flag">--auto-approve</span>', d: 4300 },
+      { t: '<span class="c-success">  Apply complete! Resources: 5 added, 0 changed, 0 destroyed.</span>', d: 5500 },
+      { t: '', d: 5700 },
+      { t: '<span class="c-success">  ✓ Production environment ready in 47s</span>', d: 6000 },
+      { t: '<span class="c-success">  ✓ Dashboard: https://grafana.prod.stackops.link</span>', d: 6300 },
+      { t: '<span class="c-success">  ✓ GitOps sync active — watching main branch</span>', d: 6600 },
+    ];
+
+    const termRoot = document.getElementById('terminal-root');
+    let tIdx = 0;
+
+    function addTermLine() {
+      if (tIdx >= termLines.length) {
+        const cl = document.createElement('div');
+        cl.innerHTML = '<span class="c-prompt">~</span> <span class="cursor"></span>';
+        termRoot.appendChild(cl);
+        return;
+      }
+      const line = termLines[tIdx];
+      const div = document.createElement('div');
+      div.innerHTML = line.t || '&nbsp;';
+      div.style.opacity = '0';
+      div.style.transition = 'opacity 0.25s ease';
+      termRoot.appendChild(div);
+      requestAnimationFrame(() => div.style.opacity = '1');
+
+      tIdx++;
+      if (tIdx < termLines.length) {
+        setTimeout(addTermLine, termLines[tIdx].d - line.d);
+      } else {
+        setTimeout(addTermLine, 350);
+      }
+    }
+
+    const termObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          setTimeout(addTermLine, 800);
+          termObs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    termObs.observe(document.querySelector('.terminal'));
+
+    // ── Waitlist form (client-side only for demo) ──
+    document.getElementById('waitlist-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('waitlist-btn');
+      const form = this;
+      const success = document.getElementById('waitlist-success');
+
+      btn.textContent = 'Joining...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        form.classList.add('hidden');
+        success.classList.remove('hidden');
+      }, 800);
+    });
+  </script>
+</body>
+</html>
