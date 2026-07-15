@@ -47,6 +47,8 @@ resource "aws_eks_addon" "example" {
   addon_name   = "aws-network-flow-monitoring-agent"
 }
 
+# Used for PODs to assume Role, that way PODS dont have to rely
+# on node roles, making IAM roles more granular
 resource "aws_eks_addon" "pod_identity" {
   cluster_name = aws_eks_cluster.eks.name
   addon_name   = "eks-pod-identity-agent"

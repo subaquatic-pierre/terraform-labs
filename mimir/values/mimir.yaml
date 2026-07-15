@@ -1,0 +1,27 @@
+mimir:
+  structuredConfig:
+    # Use different buckets instead of different prefix for storage
+    common:
+      storage:
+        backend: s3
+        s3:
+          bucket_name: mimir-storage
+          endpoint: s3.amazonaws.com
+
+    blocks_storage:
+      backend: s3
+      s3:
+        bucket_name: mimir-storage
+        prefix: blocks
+
+    ruler_storage:
+      backend: s3
+      s3:
+        bucket_name: mimir-storage
+        prefix: ruler
+
+    alertmanager_storage:
+      backend: s3
+      s3:
+        bucket_name: mimir-storage
+        prefix: alertmanager

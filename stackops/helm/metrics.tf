@@ -1,3 +1,6 @@
+# Used with HPA to provide POD metrics for HorizontalPodAutoscaling
+# resource to check required resources vs current used resources to 
+#  determine whether to scale the pods in a deployment
 resource "helm_release" "metrics_server" {
   name = "${var.cluster_name}-metrics-server"
 

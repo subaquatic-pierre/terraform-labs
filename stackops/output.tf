@@ -1,11 +1,11 @@
-output "bucket_name" {
-  value = aws_s3_bucket.stackops.id
-}
+# output "bucket_name" {
+#   value = module.website.bucket_name
+# }
 
-output "infra_domain" {
-  value = "https://${aws_route53_record.infra.name}"
-}
+# output "infra_domain" {
+#   value = module.website.infra_domain
+# }
 
-output "cloudfront_id" {
-  value = aws_cloudfront_distribution.site.id
-}
+# output "cloudfront_id" {
+#   value = module.website.cloudfront_id
+# }
