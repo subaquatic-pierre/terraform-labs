@@ -1,0 +1,15 @@
+
+// Kubernetes pod discovery
+discovery.kubernetes "pods" {
+  role = "pod"
+}
+
+// Kubernetes service discovery
+discovery.kubernetes "services" {
+  role = "service"
+}
+
+// Kubernetes node discovery
+discovery.kubernetes "nodes" {
+  role = "node"
+}

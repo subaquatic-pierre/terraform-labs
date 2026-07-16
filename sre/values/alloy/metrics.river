@@ -1,0 +1,304 @@
+// =====================================================
+// Pod metrics
+// =====================================================
+
+discovery.relabel "pod_metrics" {
+  targets = discovery.kubernetes.pods.targets
+
+  rule {
+    source_labels = ["__meta_kubernetes_pod_phase"]
+    regex         = "Succeeded|Failed"
+    action        = "drop"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_namespace"]
+    target_label  = "namespace"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_pod_name"]
+    target_label  = "pod"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_pod_container_name"]
+    target_label  = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_pod_node_name"]
+    target_label  = "node"
+  }
+}
+
+
+
+prometheus.scrape "pods" {
+  targets = discovery.relabel.pod_metrics.output
+  scrape_interval = "${scrape_interval}"
+
+  forward_to = [
+    prometheus.remote_write.mimir.receiver,
+  ]
+}
+
+// =====================================================
+// Service metrics
+// =====================================================
+
+discovery.relabel "service_metrics" {
+  targets = discovery.kubernetes.services.targets
+
+  rule {
+    source_labels = ["__meta_kubernetes_namespace"]
+    target_label  = "namespace"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_service_name"]
+    target_label = "service"
+  }
+}
+
+prometheus.scrape "services" {
+  targets = discovery.relabel.service_metrics.output
+  scrape_interval = "${scrape_interval}"
+
+  forward_to = [
+    prometheus.remote_write.mimir.receiver,
+  ]
+}
+
+// Service metrics (opt-in)
+discovery.relabel "opt_in_service_metrics" {
+  targets = discovery.kubernetes.services.targets
+
+  // Only scrape services with:
+  // prometheus.io/scrape: "true"
+  rule {
+    source_labels = [
+      "__meta_kubernetes_service_annotation_prometheus_io_scrape",
+    ]
+
+    regex  = "true"
+    action = "keep"
+  }
+
+  // Namespace label
+  rule {
+    source_labels = [
+      "__meta_kubernetes_namespace",
+    ]
+
+    target_label = "namespace"
+  }
+
+  // Service label
+  rule {
+    source_labels = [
+      "__meta_kubernetes_service_name",
+    ]
+
+    target_label = "service"
+  }
+
+
+  // Metrics path override
+  rule {
+    source_labels = [
+      "__meta_kubernetes_service_annotation_prometheus_io_path",
+    ]
+    regex = "(.+)"
+    target_label = "__metrics_path__"
+    replacement = "$1"
+  }
+
+  // Port override
+  rule {
+    source_labels = [
+      "__address__",
+      "__meta_kubernetes_service_annotation_prometheus_io_port",
+    ]
+    regex = "([^:]+)(?::\\d+)?;(\\d+)"
+    replacement = "$1:$2"
+    target_label = "__address__"
+  }
+}
+
+prometheus.scrape "opt_in_services" {
+  targets = discovery.relabel.opt_in_service_metrics.output
+  scrape_interval = "${scrape_interval}"
+
+  forward_to = [
+    prometheus.remote_write.mimir.receiver,
+  ]
+}
+
+// =====================================================
+// Kubelet cAdvisor metrics
+// =====================================================
+
+discovery.relabel "cadvisor" {
+  targets = discovery.kubernetes.nodes.targets
+
+  rule {
+    target_label = "__address__"
+    replacement  = "kubernetes.default.svc:443"
+  }
+
+  rule {
+    source_labels = [
+      "__meta_kubernetes_node_name",
+    ]
+    target_label = "__metrics_path__"
+    replacement = "/api/v1/nodes/$1/proxy/metrics/cadvisor"
+  }
+
+  rule {
+    source_labels = [
+      "__meta_kubernetes_node_name",
+    ]
+    target_label = "node"
+  }
+}
+
+prometheus.scrape "cadvisor" {
+  targets = discovery.relabel.cadvisor.output
+  scheme = "https"
+
+  bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+  tls_config {
+    insecure_skip_verify = true
+  }
+
+  scrape_interval = "${scrape_interval}"
+
+  forward_to = [
+    prometheus.remote_write.mimir.receiver,
+  ]
+
+}
+
+// =====================================================
+// kube-state-metrics
+// =====================================================
+
+discovery.relabel "kube_state_metrics" {
+  targets = discovery.kubernetes.services.targets
+
+  rule {
+    source_labels = [
+      "__meta_kubernetes_service_name",
+    ]
+    regex = "kube-state-metrics"
+    action = "keep"
+  }
+
+  rule {
+    source_labels = [
+      "__meta_kubernetes_namespace",
+    ]
+    target_label = "namespace"
+  }
+}
+
+prometheus.scrape "kube_state_metrics" {
+  targets = discovery.relabel.kube_state_metrics.output
+  scrape_interval = "${scrape_interval}"
+
+  forward_to = [
+    prometheus.remote_write.mimir.receiver,
+  ]
+}
+
+// =====================================================
+// kubelet metrics
+// =====================================================
+
+discovery.relabel "kubelet" {
+  targets = discovery.kubernetes.nodes.targets
+
+  rule {
+    target_label = "__address__"
+    replacement = "kubernetes.default.svc:443"
+  }
+
+  rule {
+    source_labels = [
+      "__meta_kubernetes_node_name",
+    ]
+
+    target_label = "__metrics_path__"
+
+    replacement = "/api/v1/nodes/$1/proxy/metrics"
+  }
+
+  rule {
+    source_labels = [
+      "__meta_kubernetes_node_name",
+    ]
+
+    target_label = "node"
+  }
+}
+
+prometheus.scrape "kubelet" {
+  targets = discovery.relabel.kubelet.output
+  scheme = "https"
+
+  bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+  tls_config {
+    insecure_skip_verify = true
+  }
+
+  scrape_interval = "${scrape_interval}"
+
+  forward_to = [
+    prometheus.remote_write.mimir.receiver,
+  ]
+
+}
+
+// =====================================================
+// Node OS metrics using Alloy built-in exporter
+// =====================================================
+
+prometheus.exporter.unix "node" {
+  procfs_path = "/host/proc"
+  sysfs_path = "/host/sys"
+}
+
+prometheus.scrape "node" {
+  targets = prometheus.exporter.unix.node.targets
+  scrape_interval = "${scrape_interval}"
+
+  forward_to = [
+    prometheus.remote_write.mimir.receiver,
+  ]
+}
+
+// =====================================================
+// Alloy self metrics
+// =====================================================
+
+prometheus.exporter.self "alloy" {}
+prometheus.scrape "alloy" {
+  targets = prometheus.exporter.self.alloy.targets
+  scrape_interval = "${scrape_interval}"
+
+  forward_to = [
+    prometheus.remote_write.mimir.receiver,
+  ]
+}
+
+// =====================================================
+// Remote Write
+// =====================================================
+
+prometheus.remote_write "mimir" {
+  endpoint {
+    url = "${mimir_endpoint}"
+    send_native_histograms = true
+  }
+}

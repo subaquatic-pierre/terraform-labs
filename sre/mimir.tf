@@ -1,7 +1,3 @@
-locals {
-  ns = kubernetes_namespace_v1.monitoring.metadata[0].name
-}
-
 resource "helm_release" "mimir" {
   name       = "mimir"
   repository = "https://grafana.github.io/helm-charts"

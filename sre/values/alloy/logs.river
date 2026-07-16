@@ -1,0 +1,26 @@
+// Kubernetes pod logs
+loki.source.kubernetes "pods" {
+  targets = discovery.kubernetes.pods.targets
+
+  forward_to = [
+    loki.process.pod_logs.receiver,
+  ]
+}
+
+loki.process "pod_logs" {
+  stage.static_labels {
+    values = {
+      cluster = "${cluster_name}"
+    }
+  }
+
+  forward_to = [
+    loki.write.default.receiver,
+  ]
+}
+
+loki.write "default" {
+  endpoint {
+    url = "${loki_endpoint}"
+  }
+}
