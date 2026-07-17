@@ -1,24 +1,26 @@
-terraform {
-  required_version = ">= 1.6"
+module "helm" {
+  source       = "./helm"
+  aws_region   = var.aws_region
+  cluster_name = module.eks.cluster_name
+  vpc_id       = module.eks.vpc_id
 
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.54.0"
-    }
-  }
+  depends_on = [module.eks]
 }
 
-
-provider "aws" {
-  region = "us-east-2"
-
-  default_tags {
-    tags = {
-      Environment = var.env
-      Terraform   = true
-      Project     = var.project_name
-    }
-  }
+module "eks" {
+  source       = "./eks"
+  aws_region   = var.aws_region
+  project_name = var.project_name
+  eks_version  = var.eks_version
+  env          = var.env
+  default_tags = var.default_tags
 }
+
+# module "website" {
+#   source       = "./website"
+#   project_name = var.project_name
+#   domain_name  = var.domain_name
+#   default_tags = var.default_tags
+# }
+
 

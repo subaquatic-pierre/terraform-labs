@@ -2,7 +2,7 @@
 # resource to check required resources vs current used resources to 
 #  determine whether to scale the pods in a deployment
 resource "helm_release" "metrics_server" {
-  name = "${var.cluster_name}-metrics-server"
+  name = "${aws_eks_cluster.eks.name}-metrics-server"
 
   repository = "https://kubernetes-sigs.github.io/metrics-server/"
   chart      = "metrics-server"

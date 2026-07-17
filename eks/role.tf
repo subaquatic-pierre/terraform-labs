@@ -1,5 +1,5 @@
 resource "aws_iam_role" "pod_assume_role_policy" {
-  name = "${var.cluster_name}-cluster-autoscaler"
+  name = "${aws_eks_cluster.eks.name}-cluster-autoscaler"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

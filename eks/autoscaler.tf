@@ -3,12 +3,12 @@ locals {
 }
 
 resource "aws_iam_role" "cluster_autoscaler" {
-  name               = "${var.cluster_name}-cluster-autoscaler"
+  name               = "${aws_eks_cluster.eks.name}-cluster-autoscaler"
   assume_role_policy = data.aws_iam_policy_document.pod_identity_trust.json
 }
 
 resource "aws_iam_policy" "cluster_autoscaler" {
-  name   = "${var.cluster_name}-cluster-autoscaler"
+  name   = "${aws_eks_cluster.eks.name}-cluster-autoscaler"
   policy = file("${path.module}/policies/AWSClusterAutoScaler.json")
 }
 
@@ -20,7 +20,7 @@ resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
 
 
 resource "aws_eks_pod_identity_association" "cluster_autoscaler" {
-  cluster_name    = var.cluster_name
+  cluster_name    = aws_eks_cluster.eks.name
   namespace       = "kube-system"
   service_account = locals.sa_name
   role_arn        = aws_iam_role.cluster_autoscaler.arn
@@ -43,7 +43,7 @@ resource "helm_release" "cluster_autoscaler" {
       }
 
       autoDiscovery = {
-        clusterName = var.cluster_name
+        clusterName = aws_eks_cluster.eks.name
       }
 
       awsRegion = var.aws_region

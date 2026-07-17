@@ -1,53 +1,57 @@
-module "eks" {
-  source  = "terraform-aws-modules/eks/aws"
-  version = "~> 21.0"
+resource "aws_iam_role" "eks" {
+  name = "${var.project_name}-eks-cluster"
 
-  name               = "${var.project_name}-cluster"
-  kubernetes_version = "1.36"
-
-  # EKS Addons
-  addons = {
-    coredns = {}
-    eks-pod-identity-agent = {
-      before_compute = true
-    }
-    kube-proxy = {}
-    vpc-cni = {
-      before_compute = true
-    }
-  }
-
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
-
-  endpoint_public_access                   = true
-  enable_cluster_creator_admin_permissions = true
-
-  eks_managed_node_groups = {
-    example = {
-      ami_type       = "AL2023_x86_64_STANDARD"
-      instance_types = ["t3.large"]
-
-      min_size     = 1
-      max_size     = 5
-      desired_size = 1
-    }
-  }
-
-  # Allow console admin cluster access
-  access_entries = {
-    pierre = {
-      principal_arn = "arn:aws:iam::032796414879:user/Pierre"
-
-      policy_associations = {
-        admin = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-
-          access_scope = {
-            type = "cluster"
-          }
-        }
+  assume_role_policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "eks.amazonaws.com"
       }
     }
-  }
+  ]
 }
+POLICY
+}
+
+resource "aws_iam_role_policy_attachment" "eks" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  role       = aws_iam_role.eks.name
+}
+
+resource "aws_eks_cluster" "eks" {
+  name     = "${var.project_name}-eks"
+  version  = var.eks_version
+  role_arn = aws_iam_role.eks.arn
+
+  vpc_config {
+    endpoint_private_access = false
+    endpoint_public_access  = true
+
+    subnet_ids = [for k, v in aws_subnet.private_subnets : v.id]
+  }
+
+  access_config {
+    authentication_mode                         = "API"
+    bootstrap_cluster_creator_admin_permissions = true
+  }
+
+  depends_on = [aws_iam_role_policy_attachment.eks]
+}
+
+resource "aws_eks_addon" "example" {
+  cluster_name = aws_eks_cluster.eks.name
+  addon_name   = "aws-network-flow-monitoring-agent"
+}
+
+# Used for PODs to assume Role, that way PODS dont have to rely
+# on node roles, making IAM roles more granular
+resource "aws_eks_addon" "pod_identity" {
+  cluster_name = aws_eks_cluster.eks.name
+  addon_name   = "eks-pod-identity-agent"
+}
+
+

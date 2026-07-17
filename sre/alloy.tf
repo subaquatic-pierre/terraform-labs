@@ -7,7 +7,7 @@ locals {
     }),
     templatefile("${path.module}/values/alloy/logs.river", {
       loki_endpoint = "http://loki-gateway.${local.monitoring_ns}.svc.cluster.local/loki/api/v1/push",
-      cluster_name  = var.cluster_name
+      cluster_name  = aws_eks_cluster.eks.name
     }),
     templatefile("${path.module}/values/alloy/loki.river", {}),
   ]))
