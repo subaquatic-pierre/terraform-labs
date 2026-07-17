@@ -1,0 +1,48 @@
+// 1. Discover all Kubernetes services in the cluster dynamically
+discovery.kubernetes "loki_services" {
+  role = "service"
+}
+
+// 2. Filter down to the active Loki microservice endpoints
+discovery.relabel "loki_metrics_targets" {
+  targets = discovery.kubernetes.loki_services.targets
+
+  // Match only services belonging to the Loki application
+  rule {
+    source_labels = ["__meta_kubernetes_service_label_app_kubernetes_io_name"]
+    regex         = "loki"
+    action        = "keep"
+  }
+
+  // Ensure we scrape only on the designated http-metrics port
+  rule {
+    source_labels = ["__meta_kubernetes_service_port_name"]
+    regex         = "http-metrics"
+    action        = "keep"
+  }
+
+  // Exclude headless services to prevent double scraping (since they share the same endpoints)
+  rule {
+    source_labels = ["__meta_kubernetes_service_name"]
+    regex         = ".*headless"
+    action        = "drop"
+  }
+
+  // Set the job label to "loki"
+  rule {
+    target_label = "job"
+    replacement  = "loki"
+  }
+
+  // Set the app label to "loki" to satisfy log_messages_total{app="loki"}
+  rule {
+    target_label = "app"
+    replacement  = "loki"
+  }
+}
+
+// 3. Scrape the targets and push them to Mimir
+prometheus.scrape "loki_metrics" {
+  targets    = discovery.relabel.loki_metrics_targets.output
+  forward_to = [prometheus.remote_write.mimir.receiver]
+}

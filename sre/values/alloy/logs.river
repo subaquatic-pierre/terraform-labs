@@ -10,7 +10,7 @@ loki.source.kubernetes "pods" {
 loki.process "pod_logs" {
   stage.static_labels {
     values = {
-      cluster = "${cluster_name}"
+      cluster = "${cluster_name}",
     }
   }
 
@@ -22,5 +22,6 @@ loki.process "pod_logs" {
 loki.write "default" {
   endpoint {
     url = "${loki_endpoint}"
+    tenant_id = "anonymous"
   }
 }

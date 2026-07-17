@@ -1,14 +1,16 @@
-# resource "helm_release" "grafana" {
-#   name       = "grafana"
-#   repository = "https://grafana-community.github.io/helm-charts"
-#   chart      = "grafana-community"
-#   namespace  = kubernetes_namespace_v1.monitoring.metadata[0].name
-#   version    = "12.7.2"
+resource "helm_release" "grafana" {
+  name       = "grafana"
+  repository = "https://grafana-community.github.io/helm-charts"
+  chart      = "grafana"
+  namespace  = local.monitoring_ns
+  version    = "12.7.2"
 
-#   values = [
-#     templatefile("${path.module}/values/grafana.yaml",{})
-#   ]
+  values = [
+    templatefile("${path.module}/values/grafana.yaml", {
+      mimir_endpoint = "http://mimir-gateway.${local.monitoring_ns}.svc.cluster.local/prometheus"
+      loki_endpoint  = "http://loki-gateway.${local.monitoring_ns}.svc.cluster.local"
+    })
+  ]
 
-#   depends_on = [
-#   ]
-# }
+  depends_on = []
+}

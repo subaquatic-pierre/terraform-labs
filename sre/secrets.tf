@@ -1,7 +1,7 @@
 resource "kubernetes_secret_v1" "mimir_s3" {
   metadata {
-    name      = "mimir-s3"
-    namespace = kubernetes_namespace_v1.monitoring.metadata[0].name
+    name      = "aws-s3-secret"
+    namespace = local.mimir_ns
   }
 
   data = {
@@ -11,3 +11,4 @@ resource "kubernetes_secret_v1" "mimir_s3" {
 
   type = "Opaque"
 }
+

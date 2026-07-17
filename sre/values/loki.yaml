@@ -1,0 +1,171 @@
+loki:
+  limits_config:
+    # Increase from default 4MB/s to 15MB/s
+    ingestion_rate_mb: 15
+    # Increase the burst window capacity to allow spikes
+    ingestion_burst_size_mb: 30
+  # auth_enabled: true
+  storage:
+    bucketNames:
+      chunks: ${bucket_name_prefix}-loki-chunks
+      ruler: ${bucket_name_prefix}-loki-ruler
+    backend: s3
+    s3:
+      endpoint: s3.${aws_region}.amazonaws.com
+      s3ForcePathStyle: true
+      region: ${aws_region}
+      access_key_id: ${aws_access_key}
+      secret_access_key: ${aws_secret_key}
+      insecure: false
+
+  structuredConfig:
+    schema_config:
+      configs:
+        - from: 2024-01-01
+          store: tsdb
+          object_store: s3
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
+  # ---
+  # Monolithic mode
+  # ---
+  commonConfig:
+    replication_factor: 1
+  pattern_ingester:
+    enabled: true
+  limits_config:
+    allow_structured_metadata: true
+    volume_enabled: true
+  rulerConfig:
+    enable_api: true
+  # ---
+
+deploymentMode: Monolithic
+
+singleBinary:
+  replicas: 1
+
+# Zero out replica counts of other deployment modes
+backend:
+  replicas: 0
+read:
+  replicas: 0
+write:
+  replicas: 0
+
+ingester:
+  replicas: 0
+querier:
+  replicas: 0
+queryFrontend:
+  replicas: 0
+queryScheduler:
+  replicas: 0
+distributor:
+  replicas: 0
+compactor:
+  replicas: 0
+indexGateway:
+  replicas: 0
+bloomPlanner:
+  replicas: 0
+bloomBuilder:
+  replicas: 0
+bloomGateway:
+  replicas: 0
+
+# ---
+# Simple Scalable Mode
+# ---
+
+# deploymentMode: SimpleScalable
+
+# backend:
+#   replicas: 2
+#   sidecar: false
+#   # extraEnv:
+#   #   - name: K8S_SIDECAR_BIND_ADDRESS
+#   #     value: "0.0.0.0"
+# read:
+#   replicas: 2
+# write:
+#   replicas: 3 # To ensure data durability with replication
+# ---
+
+# ---
+# Production Micro Services Mode
+# ---
+# deploymentMode: Distributed
+
+# serviceAccount:
+#   annotations:
+#     "eks.amazonaws.com/role-arn": "arn:aws:iam::<account id>:role/<role name>"
+
+# ingester:
+#   replicas: 3 # To ensure data durability with replication
+#   zoneAwareReplication:
+#     enabled: false
+#   # resources:
+#   #   limits:
+#   #     memory: 1Gi
+#   #   requests:
+#   #     cpu: 100m
+#   #     memory: 512Mi
+# querier:
+#   replicas: 3 # Improve query performance via parallelism
+#   maxUnavailable: 2
+#   # resources:
+#   #   limits:
+#   #     memory: 1Gi
+#   #   requests:
+#   #     cpu: 100m
+#   #     memory: 256Mi
+# queryFrontend:
+#   replicas: 2
+#   maxUnavailable: 1
+# queryScheduler:
+#   replicas: 2
+# distributor:
+#   replicas: 3
+#   maxUnavailable: 2
+#   # resources:
+#   #   limits:
+#   #     memory: 512Mi
+#   #   requests:
+#   #     cpu: 100m
+#   #     memory: 128Mi
+# compactor:
+#   replicas: 1
+# indexGateway:
+#   replicas: 2
+#   maxUnavailable: 1
+# patternIngester:
+#   enabled: true
+#   replicas: 1
+
+# bloomPlanner:
+#   replicas: 0
+# bloomBuilder:
+#   replicas: 0
+# bloomGateway:
+#   replicas: 0
+
+# backend:
+#   replicas: 0
+# read:
+#   replicas: 0
+# write:
+#   replicas: 0
+
+# singleBinary:
+#   replicas: 0
+
+# Gateway (NGINX) serves as the front door for reads/writes
+gateway:
+  # enabled: true
+  # autoscaling:
+  #   enabled: true
+  nginxConfig:
+    enableIPv6: false

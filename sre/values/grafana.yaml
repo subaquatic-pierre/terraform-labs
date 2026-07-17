@@ -1,0 +1,119 @@
+grafana.ini:
+  dashboards:
+    default_home_dashboard_path: /var/lib/grafana/dashboards/default/kubernetes-cluster.json
+
+adminUser: admin
+adminPassword: admin
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+
+# ==========================================
+# Datasources
+# ==========================================
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Mimir
+        type: prometheus
+        access: proxy
+        url: ${mimir_endpoint}
+        isDefault: true
+        jsonData:
+          httpMethod: POST
+          prometheusType: Mimir
+          # Ensure this matches the header injected below
+          httpHeaderName1: "X-Scope-OrgID"
+        secureJsonData:
+          # Default tenant ID used by Mimir
+          httpHeaderValue1: "anonymous"
+
+      - name: Loki
+        type: loki
+        access: proxy
+        url: ${loki_endpoint}
+        jsonData:
+          # If you want to configure Derived Fields to link logs to metrics:
+          derivedFields:
+            - datasourceUid: mimir
+              matcherRegex: (?:trace_id|traceId)="?(\w+)"?
+              name: TraceID
+              url: "$${__value.raw}"
+        secureJsonData:
+          # Optional: Add headers if multi-tenancy is active
+          httpHeaderValue1: "anonymous"
+        jsonData:
+          httpHeaderName1: "X-Scope-OrgID"
+
+      # - name: Loki
+      #   type: loki
+      #   access: proxy
+      #   url: http://loki-gateway.monitoring.svc.cluster.local
+
+      # - name: Tempo
+      #   type: tempo
+      #   access: proxy
+      #   url: http://tempo.monitoring.svc.cluster.local:3100
+
+# ==========================================
+# Dashboard provisioning
+# ==========================================
+
+# ==========================================
+# Dashboard Provisioning Settings
+# ==========================================
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        # Targets Grafana's default "General" folder
+        folder: ''
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          # This maps to where the Helm chart mounts the 'dashboards.default' block below
+          path: /var/lib/grafana/dashboards/default
+
+dashboards:
+  default:
+    node-exporter:
+      gnetId: 1860
+      revision: 45
+      datasource: Mimir
+
+    kubernetes-cluster:
+      gnetId: 7249
+      revision: 1
+      datasource: Mimir
+
+    loki:
+      gnetId: 14055
+      revision: 1
+      datasource: Mimir
+
+    kubernetes-pods:
+      gnetId: 6417
+      revision: 1
+      datasource: Mimir
+
+
+sidecar:
+  dashboards:
+    enabled: true
+    # This automatically reloads dashboards when a ConfigMap is created or updated
+    label: grafana_dashboard
+    labelValue: "1"

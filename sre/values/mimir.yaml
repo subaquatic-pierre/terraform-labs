@@ -1,26 +1,48 @@
 mimir:
   structuredConfig:
-    # Use different buckets instead of different prefix for storage
+    limits:
+      #   # Limit queries to 500 days. You can override this on a per-tenant basis.
+      #   max_total_query_length: 12000h
+      #   # Adjust max query parallelism to 16x sharding, without sharding we can run 15d queries fully in parallel.
+      #   # With sharding we can further shard each day another 16 times. 15 days * 16 shards = 240 subqueries.
+      #   max_query_parallelism: 240
+      #   # Avoid caching results newer than 10m because some samples can be delayed
+      #   # This presents caching incomplete results
+      #   max_cache_freshness: 10m
+
+      #   # Now 150,000/s is truly available to any distributor that receives the burst
+      ingestion_rate: 150000
+      ingestion_burst_size: 1000000
+
     common:
       storage:
         backend: s3
         s3:
-          bucket_name: ${bucket_name}
+          bucket_name: ${bucket_name_prefix}-mimir
           endpoint: s3.amazonaws.com
           access_key_id: ${aws_access_key}
           secret_access_key: ${aws_secret_key}
 
     blocks_storage:
       s3:
-        bucket_name: ${bucket_name}-block
+        bucket_name: ${bucket_name_prefix}-mimir-block
 
     ruler_storage:
       s3:
-        bucket_name: ${bucket_name}-ruler
+        bucket_name: ${bucket_name_prefix}-mimir-ruler
 
     alertmanager_storage:
       s3:
-        bucket_name: ${bucket_name}-alert
+        bucket_name: ${bucket_name_prefix}-mimir-alert
+
+runtimeConfig:
+  ingester_limits: # limits that each ingester replica enforces
+    max_ingestion_rate: 150000
+    max_series: 1500000
+  distributor_limits: # limits that each distributor replica enforces
+    max_ingestion_rate: 150000
+    max_inflight_push_requests: 150000
+    max_inflight_push_requests_bytes: 5000000000
 
 minio:
   enabled: false
