@@ -36,7 +36,7 @@ kubectl create secret generic regcred \
 2. Use kubeseal to encrypt secret
 
 ```sh
-kubeseal --format yaml < local-regcred.secret.yaml > base/common/example-project/docker-regcred.yaml \
+kubeseal --format yaml < local-regcred.secret.yaml > docker-regcred.yaml \
 --controller-namespace sealed-secrets \
 --controller-name sealed-secrets
 ```

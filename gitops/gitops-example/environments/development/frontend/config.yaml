@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: project
+  name: frontend-config
+data:
+  ENVIRONMENT: "development"
+  # DB_URL: "postgres://dev-db:5432/app"
+  # LOG_LEVEL: "debug"

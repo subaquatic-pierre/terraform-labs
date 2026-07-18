@@ -70,7 +70,7 @@ resource "kubernetes_manifest" "applicationset_project_apps" {
       ]
       template = {
         metadata = {
-          name = "{{path[0]}}-{{path[1]}}"
+          name = "{{path[1]}}-{{path[2]}}"
         }
         spec = {
           project = "default"
