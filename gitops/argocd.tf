@@ -58,7 +58,7 @@ resource "kubernetes_manifest" "applicationset_project_apps" {
       generators = [
         {
           git = {
-            repoURL  = "https://github.com/your-org/your-repo.git"
+            repoURL  = "git@github.com:subaquatic-pierre/gitops-example.git"
             revision = "main"
             directories = [
               {
@@ -70,12 +70,12 @@ resource "kubernetes_manifest" "applicationset_project_apps" {
       ]
       template = {
         metadata = {
-          name = "{{path[1]}}-{{path[2]}}"
+          name = "{{path[0]}}-{{path[1]}}"
         }
         spec = {
           project = "default"
           source = {
-            repoURL        = "https://github.com/subaquatic-pierre/gitops-example.git"
+            repoURL        = "git@github.com:subaquatic-pierre/gitops-example.git"
             targetRevision = "main"
             path           = "{{path}}"
           }
@@ -85,7 +85,7 @@ resource "kubernetes_manifest" "applicationset_project_apps" {
           syncPolicy = {
             automated = {
               prune    = true
-              selfHeel = true
+              selfHeal = true
             }
           }
         }
