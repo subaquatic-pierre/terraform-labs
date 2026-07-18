@@ -1,0 +1,3 @@
+images:
+  - name: payment-api
+    tag: v1.2.0
