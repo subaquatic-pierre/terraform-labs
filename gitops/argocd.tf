@@ -75,7 +75,7 @@ resource "kubernetes_manifest" "applicationset_project_apps" {
         spec = {
           project = "default"
           source = {
-            repoURL        = "https://github.com/your-org/your-repo.git"
+            repoURL        = "https://github.com/subaquatic-pierre/gitops-example.git"
             targetRevision = "main"
             path           = "{{path}}"
           }
